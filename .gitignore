@@ -1,0 +1,27 @@
+
+# Visual Studio temporary files
+.vs/
+*.suo
+*.user
+*.VC.db
+
+# Generated build directories
+out/
+build/
+cmake-build-*/
+
+# Generated CMake files
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+compile_commands.json
+
+# Compiled C++ artefacts
+*.exe
+*.obj
+*.pdb
+*.ilk
+
+# Temporary files
+*.log
+*.tmp
