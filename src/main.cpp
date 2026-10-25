@@ -1,28 +1,59 @@
 
-#include "afrm/validation.h"
+#include "afrm/fuel_calculator.h"
 
+#include <iomanip>
 #include <iostream>
 
 int main()
 {
+    // Simulated flight: AFRM-001
     const afrm::FlightInput flight{
         "AFRM-001",
-        200.0,
-        200.0,
-        200.0,
-        500.0,
-        20.0
+        200.0, // Distance (NM)
+        200.0, // Groundspeed (knots)
+        200.0, // Fuel burn (kg/hour)
+        500.0, // Available fuel (kg)
+        20.0   // Taxi fuel (kg)
     };
 
-    if (const auto error = afrm::validateFlightInput(flight)) {
+    // Approved simulated fuel policy
+    const afrm::FuelPolicy policy{};
+
+    afrm::FuelResults results{};
+
+    if (const auto error =
+        afrm::calculateFuel(flight, policy, results)) {
         std::cerr << "INVALID: " << *error << '\n';
         return 1;
     }
 
-    std::cout << "Flight " << flight.flightId
-        << ": inputs valid\n";
+    std::cout << std::fixed << std::setprecision(2);
 
-    std::cout << "Fuel calculations are not implemented yet\n";
+    std::cout << "=== AFRM PROTOTYPE ===\n";
+    std::cout << "Flight: " << flight.flightId << "\n\n";
+
+    std::cout << "Flight duration: "
+        << results.durationHours << " hours\n";
+
+    std::cout << "Trip fuel: "
+        << results.tripFuelKg << " kg\n";
+
+    std::cout << "Contingency fuel: "
+        << results.contingencyFuelKg << " kg\n";
+
+    std::cout << "Total required fuel: "
+        << results.totalRequiredFuelKg << " kg\n";
+
+    std::cout << "Destination balance: "
+        << results.destinationBalanceKg << " kg\n";
+
+    std::cout << "Remaining fuel margin: "
+        << results.fuelMarginKg << " kg\n";
+
+    std::cout << "Theoretical planning range: "
+        << results.theoreticalRangeNm << " NM\n";
+
+    std::cout << "\nFuel status: Not implemented yet\n";
 
     return 0;
 }

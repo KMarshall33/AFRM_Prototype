@@ -6,27 +6,51 @@ project(AFRM LANGUAGES CXX)
 # Shared AFRM application logic
 add_library(afrm_core STATIC
     src/validation.cpp
- "include/afrm/fuel_calculator.h")
+    src/fuel_calculator.cpp
+)
 
-# Make header files accessible
 target_include_directories(afrm_core PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-# Main AFRM executable
+# Main application
 add_executable(afrm
     src/main.cpp
- "include/afrm/fuel_calculator.h")
+)
 
 target_link_libraries(afrm PRIVATE afrm_core)
 
-# Existing testing infrastructure
+# Existing infrastructure test
 add_executable(afrm_tests
     tests/test_setup.cpp
- "include/afrm/fuel_calculator.h")
+)
 
-# Configure all targets consistently
-foreach(target afrm_core afrm afrm_tests)
+# Input validation tests
+add_executable(afrm_validation_tests
+    tests/test_validation.cpp
+)
+
+target_link_libraries(afrm_validation_tests
+    PRIVATE afrm_core
+)
+
+# Fuel calculation tests
+add_executable(afrm_calculation_tests
+    tests/test_calculations.cpp
+)
+
+target_link_libraries(afrm_calculation_tests
+    PRIVATE afrm_core
+)
+
+# Apply C++20 and MSVC settings
+foreach(target
+    afrm_core
+    afrm
+    afrm_tests
+    afrm_validation_tests
+    afrm_calculation_tests
+)
     set_target_properties(${target} PROPERTIES
         CXX_STANDARD 20
         CXX_STANDARD_REQUIRED ON
@@ -41,7 +65,7 @@ foreach(target afrm_core afrm afrm_tests)
     endif()
 endforeach()
 
-# Enable automated testing
+# Enable CTest
 enable_testing()
 
 add_test(
@@ -49,27 +73,12 @@ add_test(
     COMMAND afrm_tests
 )
 
-# AFRM input-validation tests
-add_executable(afrm_validation_tests
-    tests/test_validation.cpp
- "include/afrm/fuel_calculator.h")
-
-target_link_libraries(afrm_validation_tests PRIVATE afrm_core)
-
-set_target_properties(afrm_validation_tests PROPERTIES
-    CXX_STANDARD 20
-    CXX_STANDARD_REQUIRED ON
-    CXX_EXTENSIONS OFF
-)
-
-if(MSVC)
-    target_compile_options(afrm_validation_tests PRIVATE
-        /W4
-        /permissive-
-    )
-endif()
-
 add_test(
     NAME afrm_input_validation
     COMMAND afrm_validation_tests
+)
+
+add_test(
+    NAME afrm_fuel_calculations
+    COMMAND afrm_calculation_tests
 )
