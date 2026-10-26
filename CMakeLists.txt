@@ -7,6 +7,7 @@ project(AFRM LANGUAGES CXX)
 add_library(afrm_core STATIC
     src/validation.cpp
     src/fuel_calculator.cpp
+    src/fuel_status.cpp
 )
 
 target_include_directories(afrm_core PUBLIC
@@ -20,12 +21,12 @@ add_executable(afrm
 
 target_link_libraries(afrm PRIVATE afrm_core)
 
-# Existing infrastructure test
+# Infrastructure test
 add_executable(afrm_tests
     tests/test_setup.cpp
 )
 
-# Input validation tests
+# Input-validation tests
 add_executable(afrm_validation_tests
     tests/test_validation.cpp
 )
@@ -34,7 +35,7 @@ target_link_libraries(afrm_validation_tests
     PRIVATE afrm_core
 )
 
-# Fuel calculation tests
+# Fuel-calculation tests
 add_executable(afrm_calculation_tests
     tests/test_calculations.cpp
 )
@@ -43,13 +44,23 @@ target_link_libraries(afrm_calculation_tests
     PRIVATE afrm_core
 )
 
-# Apply C++20 and MSVC settings
+# Fuel-status tests
+add_executable(afrm_status_tests
+    tests/test_status.cpp
+)
+
+target_link_libraries(afrm_status_tests
+    PRIVATE afrm_core
+)
+
+# Configure C++20 and MSVC diagnostics
 foreach(target
     afrm_core
     afrm
     afrm_tests
     afrm_validation_tests
     afrm_calculation_tests
+    afrm_status_tests
 )
     set_target_properties(${target} PROPERTIES
         CXX_STANDARD 20
@@ -81,4 +92,9 @@ add_test(
 add_test(
     NAME afrm_fuel_calculations
     COMMAND afrm_calculation_tests
+)
+
+add_test(
+    NAME afrm_fuel_status
+    COMMAND afrm_status_tests
 )
