@@ -1,75 +1,107 @@
 
+#include "afrm/csv_loader.h"
 #include "afrm/fuel_calculator.h"
 #include "afrm/fuel_status.h"
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 
-int main()
+int main(int argc, char* argv[])
 {
-    // Simulated flight AFRM-001
-    const afrm::FlightInput flight{
-        "AFRM-001",
-        200.0, // Distance (NM)
-        200.0, // Groundspeed (knots)
-        200.0, // Fuel burn (kg/hour)
-        500.0, // Available fuel (kg)
-        20.0   // Taxi fuel (kg)
-    };
+    // Require one CSV file path as a command-line argument.
+    if (argc != 2) {
+        std::cerr << "Usage: afrm <flight_csv_path>\n";
+        return 1;
+    }
 
-    // Approved simulated fuel policy
+    // Open the supplied file.
+    std::ifstream input(argv[1]);
+
+    if (!input.is_open()) {
+        std::cerr << "ERROR: Cannot open CSV file: "
+            << argv[1] << '\n';
+        return 1;
+    }
+
+    const auto dataset = afrm::loadFlightsCsv(input);
+
+    if (input.bad()) {
+        std::cerr << "ERROR: Failed while reading CSV file\n";
+        return 1;
+    }
+
+    // Reject the dataset if any record is invalid.
+    if (!dataset.errors.empty()) {
+        std::cerr << "ERROR: CSV validation failed\n";
+
+        for (const auto& error : dataset.errors) {
+            std::cerr << "Line " << error.lineNumber
+                << ": " << error.message << '\n';
+        }
+
+        return 1;
+    }
+
     const afrm::FuelPolicy policy{};
 
-    afrm::FuelResults results{};
-
-    // Calculate flight fuel requirements
-    if (const auto error =
-        afrm::calculateFuel(flight, policy, results)) {
-        std::cerr << "INVALID: " << *error << '\n';
-        return 1;
-    }
-
-    // Classify the calculated fuel margin
-    const auto status = afrm::classifyFuelStatus(
-        results.fuelMarginKg,
-        policy.cautionThresholdKg
-    );
-
-    if (!status) {
-        std::cerr << "INVALID: Fuel status cannot be classified\n";
-        return 1;
-    }
-
-    // Display results
     std::cout << std::fixed << std::setprecision(2);
+    std::cout << "=== AFRM PROTOTYPE ===\n\n";
 
-    std::cout << "=== AFRM PROTOTYPE ===\n";
-    std::cout << "Flight: " << flight.flightId << "\n\n";
+    // Process every validated flight.
+    for (const auto& flight : dataset.flights) {
+        afrm::FuelResults results{};
 
-    std::cout << "Flight duration: "
-        << results.durationHours << " hours\n";
+        if (const auto error =
+            afrm::calculateFuel(flight, policy, results)) {
+            std::cerr << "INVALID: Flight "
+                << flight.flightId << ": "
+                << *error << '\n';
+            return 1;
+        }
 
-    std::cout << "Trip fuel: "
-        << results.tripFuelKg << " kg\n";
+        const auto status = afrm::classifyFuelStatus(
+            results.fuelMarginKg,
+            policy.cautionThresholdKg
+        );
 
-    std::cout << "Contingency fuel: "
-        << results.contingencyFuelKg << " kg\n";
+        if (!status) {
+            std::cerr << "INVALID: Cannot classify flight "
+                << flight.flightId << '\n';
+            return 1;
+        }
 
-    std::cout << "Total required fuel: "
-        << results.totalRequiredFuelKg << " kg\n";
+        std::cout << "Flight: " << flight.flightId << '\n';
 
-    std::cout << "Destination balance: "
-        << results.destinationBalanceKg << " kg\n";
+        std::cout << "  Duration: "
+            << results.durationHours << " hours\n";
 
-    std::cout << "Remaining fuel margin: "
-        << results.fuelMarginKg << " kg\n";
+        std::cout << "  Trip fuel: "
+            << results.tripFuelKg << " kg\n";
 
-    std::cout << "Theoretical planning range: "
-        << results.theoreticalRangeNm << " NM\n";
+        std::cout << "  Contingency: "
+            << results.contingencyFuelKg << " kg\n";
 
-    std::cout << "\nFuel status: "
-        << afrm::fuelStatusToString(*status)
-        << '\n';
+        std::cout << "  Required fuel: "
+            << results.totalRequiredFuelKg << " kg\n";
+
+        std::cout << "  Destination balance: "
+            << results.destinationBalanceKg << " kg\n";
+
+        std::cout << "  Fuel margin: "
+            << results.fuelMarginKg << " kg\n";
+
+        std::cout << "  Planning range: "
+            << results.theoreticalRangeNm << " NM\n";
+
+        std::cout << "  Status: "
+            << afrm::fuelStatusToString(*status)
+            << "\n\n";
+    }
+
+    std::cout << "Processed "
+        << dataset.flights.size()
+        << " flights\n";
 
     return 0;
 }

@@ -1,0 +1,4 @@
+flight_id,distance_nm,groundspeed_knots,fuel_burn_kg_per_hour,available_fuel_kg,taxi_fuel_kg
+AFRM-001,200,200,200,500,20
+AFRM-INVALID,200,0,200,500,20
+AFRM-ERROR,200,invalid,200,500,20

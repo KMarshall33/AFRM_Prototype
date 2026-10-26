@@ -1,0 +1,7 @@
+flight_id,distance_nm,groundspeed_knots,fuel_burn_kg_per_hour,available_fuel_kg,taxi_fuel_kg
+AFRM-001,200,200,200,500,20
+AFRM-002,200,200,200,490,20
+AFRM-003,200,200,200,489,20
+AFRM-004,200,200,200,440,20
+AFRM-005,200,200,200,439,20
+AFRM-006,0,200,200,250,20

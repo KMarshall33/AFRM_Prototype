@@ -8,6 +8,7 @@ add_library(afrm_core STATIC
     src/validation.cpp
     src/fuel_calculator.cpp
     src/fuel_status.cpp
+    src/csv_loader.cpp
 )
 
 target_include_directories(afrm_core PUBLIC
@@ -26,7 +27,7 @@ add_executable(afrm_tests
     tests/test_setup.cpp
 )
 
-# Input-validation tests
+# Input validation tests
 add_executable(afrm_validation_tests
     tests/test_validation.cpp
 )
@@ -35,7 +36,7 @@ target_link_libraries(afrm_validation_tests
     PRIVATE afrm_core
 )
 
-# Fuel-calculation tests
+# Fuel calculation tests
 add_executable(afrm_calculation_tests
     tests/test_calculations.cpp
 )
@@ -44,7 +45,7 @@ target_link_libraries(afrm_calculation_tests
     PRIVATE afrm_core
 )
 
-# Fuel-status tests
+# Fuel status tests
 add_executable(afrm_status_tests
     tests/test_status.cpp
 )
@@ -53,7 +54,16 @@ target_link_libraries(afrm_status_tests
     PRIVATE afrm_core
 )
 
-# Configure C++20 and MSVC diagnostics
+# CSV parser tests
+add_executable(afrm_csv_tests
+    tests/test_csv_loader.cpp
+)
+
+target_link_libraries(afrm_csv_tests
+    PRIVATE afrm_core
+)
+
+# C++20 and compiler diagnostics
 foreach(target
     afrm_core
     afrm
@@ -61,6 +71,7 @@ foreach(target
     afrm_validation_tests
     afrm_calculation_tests
     afrm_status_tests
+    afrm_csv_tests
 )
     set_target_properties(${target} PROPERTIES
         CXX_STANDARD 20
@@ -76,7 +87,7 @@ foreach(target
     endif()
 endforeach()
 
-# Enable CTest
+# Automated testing
 enable_testing()
 
 add_test(
@@ -97,4 +108,20 @@ add_test(
 add_test(
     NAME afrm_fuel_status
     COMMAND afrm_status_tests
+)
+
+add_test(
+    NAME afrm_csv_parser
+    COMMAND afrm_csv_tests
+)
+
+# End-to-end test using the actual application and dataset
+add_test(
+    NAME afrm_csv_example
+    COMMAND afrm
+        "${CMAKE_CURRENT_SOURCE_DIR}/data/flights.csv"
+)
+
+set_tests_properties(afrm_csv_example PROPERTIES
+    PASS_REGULAR_EXPRESSION "Processed 6 flights"
 )
