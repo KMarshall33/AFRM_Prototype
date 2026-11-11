@@ -1,0 +1,8 @@
+flight_id,distance_nm,groundspeed_knots,fuel_burn_kg_per_hour,available_fuel_kg,taxi_fuel_kg
+A2-REF,200,200,200,500,20
+A2-DYN-LOW,200,200,300,604,20
+A2-DYN-AT,200,200,300,605,20
+A2-DYN-BELOW,200,200,300,604.99,20
+A2-CROSS,200,200,250,551,26
+A2-INSUF,200,200,300,549,20
+A2-LARGE,200,200,800,1180,20

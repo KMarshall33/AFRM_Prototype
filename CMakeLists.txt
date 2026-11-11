@@ -125,3 +125,13 @@ add_test(
 set_tests_properties(afrm_csv_example PROPERTIES
     PASS_REGULAR_EXPRESSION "Processed 6 flights"
 )
+
+# Assignment 2: Requirements-based threshold characterisation
+add_test(
+    NAME afrm_threshold_characterisation
+    COMMAND "${CMAKE_COMMAND}"
+        "-DAFRM_EXE=$<TARGET_FILE:afrm>"
+        "-DDATA_FILE=${CMAKE_CURRENT_SOURCE_DIR}/tests/data/threshold_scenarios.csv"
+        "-DPOLICY_MODE=fixed"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/check_threshold_output.cmake"
+)
